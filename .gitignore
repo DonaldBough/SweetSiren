@@ -34,3 +34,12 @@ captures/
 
 # Intellij
 *.iml
+
+*idea/
+
+build.grade
+
+gradle*
+
+settings.gradle
+
