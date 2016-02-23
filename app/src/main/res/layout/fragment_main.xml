@@ -3,8 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
     android:id="@+id/fragment_main"
     tools:context="edu.purdue.dbough.sweetsignal.MainFragment">
 
