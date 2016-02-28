@@ -2,10 +2,12 @@ package edu.purdue.dbough.sweetsignal;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,20 +23,21 @@ import java.util.ArrayList;
  * A fragment representing a list of Items.
  */
 
-public class SugarEntryFragment extends ListFragment {
+public class HomeFragment extends ListFragment {
     public static ArrayList<SugarEntry> entryList = new ArrayList<>();
+    View view;
     EntryAdapter adapter;
     
-    public static SugarEntryFragment newInstance() {
-        SugarEntryFragment fragment = new SugarEntryFragment();
+    public static HomeFragment newInstance() {
+        HomeFragment fragment = new HomeFragment();
         return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main, container, false);
-        adapter = new EntryAdapter(getActivity(), R.layout.row_layout, SugarEntryFragment.entryList);
+        view = inflater.inflate(R.layout.fragment_home, container, false);
+        adapter = new EntryAdapter(getActivity(), R.layout.row_layout, HomeFragment.entryList);
         setListAdapter(adapter);
         Context context = view.getContext();
 

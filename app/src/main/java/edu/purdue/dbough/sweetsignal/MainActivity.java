@@ -1,34 +1,24 @@
 package edu.purdue.dbough.sweetsignal;
 
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.design.widget.CoordinatorLayout;
+import android.content.SharedPreferences;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
-import android.text.format.Time;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AccelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,21 +31,21 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     FloatingActionButton fab;
     FragmentManager fragmentManager;
-    EditText sugarLevelField;
-    EditText contactField;
-    TextView contactView;
-    ArrayList<String> contacts = new ArrayList<>();
     boolean firstIteration = true;
     long prevTimeInMillis = 0;
     Double prevBloodSugar = 0.0;
     double slopeTotal = 0.0;
     int lowSlopeandSugarCounter = 0;
     boolean highSlopeAndSugarFlag = false;
+    SettingsFragment settingsFragment;
+    InputFragment inputFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_container);
 
         // Create a new Fragment to be placed in the activity layout
-        final SugarEntryFragment homeFragment = new SugarEntryFragment();
+        final HomeFragment homeFragment = new HomeFragment();
         fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .add(R.id.fragment_container, homeFragment, "home")
@@ -87,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()){
             case R.id.action_settings:
-                SettingsFragment settingsFragment = new SettingsFragment().newInstance();
+                settingsFragment = new SettingsFragment().newInstance();
                 fragmentManager = getSupportFragmentManager();
                 fragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, settingsFragment, "input")
@@ -97,6 +87,74 @@ public class MainActivity extends AppCompatActivity {
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void displayInputFrag(View view){
+        inputFragment = new InputFragment().newInstance();
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.hide();
+
+        fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, inputFragment, "input")
+                .addToBackStack(null)
+                .commit();
+    }
+
+    //Called from fragment_input.xml
+    public void displayHomeFrag(View view){
+        inputFragment.saveData(inputFragment.getView());
+        ArrayList<SugarEntry> recentList = latestEntries(view, 9); //Gets entries from last n hours
+        calculateTrends(view, recentList);
+
+        // Create a new Fragment to be placed in the activity layout
+        final HomeFragment homeFragment = new HomeFragment();
+        fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, homeFragment, "home")
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void hideKeyboard (View view) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    //Adds an emergency contact. Called by onClick in fragment_settings.xml
+    public void addContact(View view) {
+        EditText contactField = (EditText) settingsFragment.getView()
+                                .findViewById(R.id.contactField);
+        ArrayList<String> contactList = new ArrayList<>();
+        Set<String> contactSet = new HashSet<>();
+        String contact = contactField.getText().toString();
+        contactList.add(contact);
+        contactSet.addAll(contactList);
+
+        //Put list in hashset, save hashset to the shared preference
+        SharedPreferences sharedPref = view.getContext().getSharedPreferences(
+                "edu.purdue.dbough.sweetsignal.PREFERENCE", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putStringSet("edu.purdue.dbough.sweetsignal.CONTACTS", contactSet);
+        editor.commit();
+
+        settingsFragment.loadContacts(settingsFragment.getView());
+    }
+
+    //Reads all contacts from the SharedPreference HashSet
+    ArrayList<String> getContacts(View view){
+        Set<String> contactSet;
+        ArrayList<String> contactList;
+        SharedPreferences sharedPref = view.getContext().getSharedPreferences
+                ("edu.purdue.dbough.sweetsignal.PREFERENCE", Context.MODE_PRIVATE);
+        contactSet = sharedPref.getStringSet
+                ("edu.purdue.dbough.sweetsignal.CONTACTS", null);
+        if (contactSet != null)
+            contactList = new ArrayList<>(contactSet);
+        else
+            contactList = new ArrayList<>();
+
+        return contactList;
     }
 
     private void Notify(String notificationTitle, String notificationMessage){
@@ -123,65 +181,28 @@ public class MainActivity extends AppCompatActivity {
         mNotificationManager.notify(9999, mBuilder.build());
     }
 
-    public void displayInputFrag(View view){
-        InputFragment inputFragment = new InputFragment().newInstance();
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.hide();
-
-        fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, inputFragment, "input")
-                .addToBackStack(null)
-                .commit();
+    private void sendSMS(String phoneNo, String sms) {
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNo, null, sms, null, null);
+            Toast.makeText(getApplicationContext(), "SMS Sent!",
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(),
+                    "SMS unable to send",
+                    Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
-    public void addContact(View view) {
-        contactView = (TextView) findViewById(R.id.contactView);
-        contactField = (EditText) findViewById(R.id.contactField);
-        String content = contactField.getText().toString();
-        content += ("\n" + contactView.getText().toString());
-        contactView.setText(content);
-        view.invalidate();
-        contacts.add(contactField.getText().toString());
-    }
-
-    public void saveData(View view){
-        //Save all data to .csv
-        sugarLevelField = (EditText) findViewById(R.id.sugarLevelField);
-        if (sugarLevelField == null) {
-            return;
+    public void Signal (View view, int confidence) {
+        Notify("SUGAR WARNING", "BLOOD SUGAR MAY DROP SOON! Code: " + confidence);
+        Toast.makeText(getApplicationContext(), "BLOOD SUGAR MAY DROP SOON! Code: " + confidence,
+                Toast.LENGTH_LONG).show();
+        ArrayList<String> contacts = getContacts(view);
+        for (String contact : contacts){
+            sendSMS(contact, "You are being alerted because a low blood sugar level was recently detected!");
         }
-        Integer sugarLevel = Integer.parseInt(sugarLevelField.getText().toString());
-        Calendar c = Calendar.getInstance();
-        SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-        SimpleDateFormat df2 = new SimpleDateFormat("HH:mm");
-        String date = df.format(c.getTime());
-        String time = df2.format(c.getTime());
-
-        Context context = view.getContext();
-        File fileDir = new File(context.getFilesDir() + File.separator);
-        File file = new File(fileDir + "BloodSugarLevels.csv");
-
-        OutputStream outputStream;
-        try{
-            outputStream = new FileOutputStream(file, true);
-            String output = (sugarLevel + "," + time + "," + date + ",");
-            outputStream.write(output.getBytes());
-            outputStream.close();
-        }
-        catch (Exception e){
-            Toast.makeText(this, "Whoops, couldn't save", Toast.LENGTH_SHORT).show();
-        }
-
-        fragmentManager = getSupportFragmentManager();
-        SugarEntryFragment homeFragment = new SugarEntryFragment().newInstance();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, homeFragment, "home")
-                .addToBackStack(null)
-                .commit();
-
-        ArrayList<SugarEntry> recentList = latestEntries(view, 9); //Gets entries from last n hours
-        calculateTrends(view, recentList);
     }
 
     public ArrayList<SugarEntry> latestEntries(View view, int hoursBefore) {
@@ -327,30 +348,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-    }
+    } //calculateTrends class
 
-    public void Signal (View view, int confidence) {
-        Notify("SUGAR WARNING", "BLOOD SUGAR MAY DROP SOON! Code: " + confidence);
-        Toast.makeText(getApplicationContext(), "BLOOD SUGAR MAY DROP SOON! Code: " + confidence,
-                Toast.LENGTH_LONG).show();
-        for (String contact : contacts){
-            sendSMS(contact, "You are being alerted because a low blood sugar level was recently detected!");
-        }
-
-    }
-
-    private void sendSMS(String phoneNo, String sms) {
-        try {
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(phoneNo, null, sms, null, null);
-            Toast.makeText(getApplicationContext(), "SMS Sent!",
-                    Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(),
-                    "SMS unable to send",
-                    Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-    }
-
-    }
+} //MainActivity class

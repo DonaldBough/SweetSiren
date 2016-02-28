@@ -6,7 +6,6 @@ package edu.purdue.dbough.sweetsignal;
 public class SugarEntry {
     String sugarLevel;
     String time;
-    String milliTime;
     String date;
 
     public SugarEntry(String sugarLevel, String time, String date) {

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/fragment_main"
-    tools:context="edu.purdue.dbough.sweetsignal.MainFragment">
+    tools:context="edu.purdue.dbough.sweetsignal.HomeFragment">
 
     <ListView
         android:id="@android:id/list"
