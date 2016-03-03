@@ -1,8 +1,6 @@
 package edu.purdue.dbough.sweetsignal;
 
-
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
@@ -10,27 +8,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 
 public class SettingsFragment extends Fragment {
     View view;
+    TextView contactView;
     File contactsFile;
 
     public static SettingsFragment newInstance() {
@@ -64,29 +53,39 @@ public class SettingsFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_settings, container, false);
     }
 
-    public void writeContact (String[] contactArray) {
+    public void writeContact (String contact) {
         try {
             FileWriter fw = new FileWriter(contactsFile, true);
-            for (String contact: contactArray) {
-                fw.write(contact + ',');
-            }
+            fw.write(contact + ',');
+            fw.close();
         }
         catch (IOException e) {}
     }
 
     public String[] loadContacts() {
+        String content = "";
         String[] contactArray;
+        contactView = (TextView) view.findViewById(R.id.contactView);
+
         try {
             FileInputStream fis = new FileInputStream (new File(String.valueOf(contactsFile)));
             BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-            contactArray = reader.readLine().split(",");
-            return contactArray;
+            String line = reader.readLine();
+            if (line != null) {
+                contactArray = line.split(",");
+
+                //Refresh contact text view
+                for (String contact: contactArray) {
+                    content += '\n' + contact;
+                }
+                contactView.setText(content);
+                view.invalidate();
+                return contactArray;
+            }
         }
         catch (IOException e) {}
         return null;
     }
-
-
 
     //Closes keyboard. Called from onClick in fragment_settings.xml
     public void hideKeyboard() {
