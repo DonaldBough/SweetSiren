@@ -125,36 +125,22 @@ public class MainActivity extends AppCompatActivity {
     public void addContact(View view) {
         EditText contactField = (EditText) settingsFragment.getView()
                                 .findViewById(R.id.contactField);
-        ArrayList<String> contactList = new ArrayList<>();
-        Set<String> contactSet = new HashSet<>();
-        String contact = contactField.getText().toString();
-        contactList.add(contact);
-        contactSet.addAll(contactList);
-
-        //Put list in hashset, save hashset to the shared preference
-        SharedPreferences sharedPref = view.getContext().getSharedPreferences(
-                "edu.purdue.dbough.sweetsignal.PREFERENCE", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet("edu.purdue.dbough.sweetsignal.CONTACTS", contactSet);
-        editor.commit();
-
-        settingsFragment.loadContacts(settingsFragment.getView());
+        String[] contactArray = contactField.getText().toString().split("\n");
+        settingsFragment.writeContact(contactArray);
     }
 
-    //Reads all contacts from the SharedPreference HashSet
-    ArrayList<String> getContacts(View view){
-        Set<String> contactSet;
-        ArrayList<String> contactList;
-        SharedPreferences sharedPref = view.getContext().getSharedPreferences
-                ("edu.purdue.dbough.sweetsignal.PREFERENCE", Context.MODE_PRIVATE);
-        contactSet = sharedPref.getStringSet
-                ("edu.purdue.dbough.sweetsignal.CONTACTS", null);
-        if (contactSet != null)
-            contactList = new ArrayList<>(contactSet);
-        else
-            contactList = new ArrayList<>();
-
-        return contactList;
+    private void sendSMS(String phoneNo, String sms) {
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNo, null, sms, null, null);
+            Toast.makeText(getApplicationContext(), "SMS Sent!",
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(),
+                    "SMS unable to send",
+                    Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
     private void Notify(String notificationTitle, String notificationMessage){
@@ -181,26 +167,12 @@ public class MainActivity extends AppCompatActivity {
         mNotificationManager.notify(9999, mBuilder.build());
     }
 
-    private void sendSMS(String phoneNo, String sms) {
-        try {
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(phoneNo, null, sms, null, null);
-            Toast.makeText(getApplicationContext(), "SMS Sent!",
-                    Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(),
-                    "SMS unable to send",
-                    Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-    }
-
     public void Signal (View view, int confidence) {
         Notify("SUGAR WARNING", "BLOOD SUGAR MAY DROP SOON! Code: " + confidence);
         Toast.makeText(getApplicationContext(), "BLOOD SUGAR MAY DROP SOON! Code: " + confidence,
                 Toast.LENGTH_LONG).show();
-        ArrayList<String> contacts = getContacts(view);
-        for (String contact : contacts){
+        String[] contactArray = settingsFragment.loadContacts();
+        for (String contact : contactArray){
             sendSMS(contact, "You are being alerted because a low blood sugar level was recently detected!");
         }
     }

@@ -15,6 +15,15 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,6 +31,7 @@ import java.util.Set;
 
 public class SettingsFragment extends Fragment {
     View view;
+    File contactsFile;
 
     public static SettingsFragment newInstance() {
         SettingsFragment fragment = new SettingsFragment();
@@ -32,18 +42,48 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = getActivity().getLayoutInflater().inflate(R.layout.fragment_settings,null);
-        loadContacts(view);
+        File fileDir = new File(view.getContext().getFilesDir() + File.separator);
+        //Make file is it doesn't exists
+        if(fileDir.exists() == false) {
+            try {
+                fileDir.mkdir();
+            }
+            catch (Exception e) {}
+        }
+        else {
+            contactsFile = new File(fileDir + "SweetSirenEmergencyContacts.csv");
+            if (contactsFile.exists() == false) {
+                try {
+                    contactsFile.createNewFile();
+                }
+                catch (IOException e) {}
+            }
+        }
+        loadContacts();
+
         return inflater.inflate(R.layout.fragment_settings, container, false);
     }
 
-    public void loadContacts(View view) {
-        TextView contactView = (TextView) view.findViewById(R.id.contactView);
-        ArrayList<String> contactList = ((MainActivity)getActivity()).getContacts(view);
-        for (String contact : contactList) {
-            contactView.setText("\n" + contact);
+    public void writeContact (String[] contactArray) {
+        try {
+            FileWriter fw = new FileWriter(contactsFile, true);
+            for (String contact: contactArray) {
+                fw.write(contact + ',');
+            }
         }
-        view.invalidate();  //for refreshment
+        catch (IOException e) {}
+    }
 
+    public String[] loadContacts() {
+        String[] contactArray;
+        try {
+            FileInputStream fis = new FileInputStream (new File(String.valueOf(contactsFile)));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+            contactArray = reader.readLine().split(",");
+            return contactArray;
+        }
+        catch (IOException e) {}
+        return null;
     }
 
 

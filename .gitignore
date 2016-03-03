@@ -45,3 +45,5 @@ settings.gradle
 
 *.png
 
+*.DS_Store
+
