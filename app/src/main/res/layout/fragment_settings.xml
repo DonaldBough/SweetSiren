@@ -4,7 +4,7 @@
     android:focusableInTouchMode="true"
     android:onClick="hideKeyboard"
     android:id="@+id/fragment_settings"
-    tools:context="edu.purdue.dbough.sweetsignal.MainActivity">
+    tools:context="edu.purdue.dbough.sweetsignal.SettingsFragment">
 
 
     <EditText
@@ -37,7 +37,6 @@
         android:layout_height="wrap_content"
         android:text="+"
         android:id="@+id/addContact"
-        android:onClick="addContact"
         android:layout_alignBottom="@+id/contactField"
         android:layout_toRightOf="@+id/contactField"
         android:layout_toEndOf="@+id/contactField"
@@ -47,12 +46,13 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Default Text"
         android:id="@+id/contactView"
-        android:textSize="14dp"
         android:layout_below="@+id/contactField"
         android:layout_alignLeft="@+id/contactField"
         android:layout_alignStart="@+id/contactField"
-        android:layout_alignRight="@+id/button"
-        android:layout_alignEnd="@+id/button" />
+        android:layout_toLeftOf="@+id/addContact"
+        android:layout_toStartOf="@+id/addContact" />
+
 
 </RelativeLayout>

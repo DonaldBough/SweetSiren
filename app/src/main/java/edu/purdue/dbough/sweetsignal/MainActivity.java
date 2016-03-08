@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
@@ -112,15 +113,6 @@ public class MainActivity extends AppCompatActivity {
     public void hideKeyboard (View view) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-    }
-
-    //Adds an emergency contact. Called by onClick in fragment_settings.xml
-    public void addContact(View view) {
-        EditText contactField = (EditText) settingsFragment.getView()
-                                .findViewById(R.id.contactField);
-        String contact = contactField.getText().toString();
-        settingsFragment.writeContact(contact);
-        settingsFragment.loadContacts();
     }
 
     private void sendSMS(String phoneNo, String sms) {
