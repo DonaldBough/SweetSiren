@@ -1,20 +1,13 @@
 package edu.purdue.dbough.sweetsignal;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,8 +18,11 @@ import java.io.InputStreamReader;
 public class SettingsFragment extends Fragment {
     View view;
     EditText contactField;
+    EditText targetField;
     TextView contactView;
     File contactsFile;
+    File targetFile;
+    int targetBloodSugar = 100;
 
     public SettingsFragment newInstance() {
         SettingsFragment fragment = new SettingsFragment();
@@ -39,9 +35,10 @@ public class SettingsFragment extends Fragment {
         view = getActivity().getLayoutInflater().inflate(R.layout.fragment_settings,null);
         contactField = (EditText) view.findViewById(R.id.contactField);
         contactView = (TextView) view.findViewById(R.id.contactView);
+        targetField = (EditText) view.findViewById(R.id.targetSugarField);
 
         File fileDir = new File(view.getContext().getFilesDir() + File.separator);
-        if(fileDir.exists() == false) { //Make file if it doesn't exists
+        if(fileDir.exists() == false) { //Make directory if it doesn't exists
             try {
                 fileDir.mkdir();
             }
@@ -49,25 +46,42 @@ public class SettingsFragment extends Fragment {
         }
         else {
             contactsFile = new File(fileDir + "SweetSirenEmergencyContacts.csv");
-            if (contactsFile.exists() == false) {
+            targetFile = new File(fileDir + "TargetBloodSugarFile.csv");
+            targetFile.delete();
+            if (contactsFile.exists() == false) { //Make file if it doesn't exist
                 try {
                     contactsFile.createNewFile();
                 }
                 catch (IOException e) {}
             }
+            if (targetFile.exists() == false) { //Make file if it doesn't exist
+                try {
+                    targetFile.createNewFile();
+                }
+                catch (IOException e) {}
+            }
         }
 
-        Button button = (Button) view.findViewById(R.id.addContact);
-        button.setOnClickListener(new View.OnClickListener() //When contact is added
-        {
+        Button contactButton = (Button) view.findViewById(R.id.addContactButton);
+        Button targetButton = (Button) view.findViewById(R.id.addTargetSugarButton);
+
+        contactButton.setOnClickListener(new View.OnClickListener() { //When contact is added
             @Override
             public void onClick(View v)
             {
                 refreshContacts();
             }
         });
+        targetButton.setOnClickListener(new View.OnClickListener() {//When target sugar is added
+            @Override
+            public void onClick(View v)
+            {
+                refreshTargetLevel();
+            }
+        });
 
         refreshContacts();
+        refreshTargetLevel();
         return view;
     }
 
@@ -102,6 +116,43 @@ public class SettingsFragment extends Fragment {
         }
         catch (IOException e) {}
         return null;
+    }
+
+    public void refreshTargetLevel() {
+        try {
+            targetBloodSugar = Integer.parseInt(targetField.getText().toString());
+        }
+        catch (Exception e) {
+            targetBloodSugar = 999;
+        }
+
+        if (targetBloodSugar != 999) { //Save targetLevel
+            try {
+                FileWriter fw = new FileWriter(targetFile, false);
+                fw.write(String.valueOf(targetBloodSugar));
+                fw.close();
+            }
+            catch (IOException e){}
+        }
+
+        else { //targetField was null, try to load a level from file
+            try {
+                FileInputStream fis = new FileInputStream (new File(String.valueOf(targetFile)));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+                String line = reader.readLine();
+                if (line != null)
+                    targetBloodSugar = Integer.parseInt(line);
+                else
+                    targetBloodSugar = 100; //Default to 100
+            }
+            catch (IOException e) {}
+        }
+
+        targetField.setText(String.valueOf(targetBloodSugar));
+    }
+
+    public int getTargetBloodSugar() {
+        return targetBloodSugar;
     }
 
 }

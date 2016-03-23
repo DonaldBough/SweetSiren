@@ -6,6 +6,18 @@
     android:id="@+id/fragment_settings"
     tools:context="edu.purdue.dbough.sweetsignal.SettingsFragment">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Emergency Contact"
+        android:textSize="18dp"
+        android:id="@+id/contactTextView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="29dp"
+        android:layout_marginStart="29dp"
+        android:layout_marginTop="29dp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -14,29 +26,16 @@
         android:ems="10"
         android:id="@+id/contactField"
         android:layout_marginTop="10dp"
-        android:layout_below="@+id/textView"
-        android:layout_alignLeft="@+id/textView"
-        android:layout_alignStart="@+id/textView"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Emergency Contact"
-        android:textSize="18dp"
-        android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="29dp"
-        android:layout_marginStart="29dp"
-        android:layout_marginTop="29dp" />
+        android:layout_below="@+id/contactTextView"
+        android:layout_alignLeft="@+id/contactTextView"
+        android:layout_alignStart="@+id/contactTextView"/>
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="+"
-        android:id="@+id/addContact"
+        android:id="@+id/addContactButton"
         android:layout_alignBottom="@+id/contactField"
         android:layout_toRightOf="@+id/contactField"
         android:layout_toEndOf="@+id/contactField"
@@ -51,8 +50,39 @@
         android:layout_below="@+id/contactField"
         android:layout_alignLeft="@+id/contactField"
         android:layout_alignStart="@+id/contactField"
-        android:layout_toLeftOf="@+id/addContact"
-        android:layout_toStartOf="@+id/addContact" />
+        android:layout_toLeftOf="@+id/addContactButton"
+        android:layout_toStartOf="@+id/addContactButton" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Target Sugar (mg/dL)"
+        android:id="@+id/TargetTextView"
+        android:layout_above="@+id/addTargetSugarButton"
+        android:layout_alignLeft="@+id/contactView"
+        android:layout_alignStart="@+id/contactView" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:ems="7"
+        android:id="@+id/targetSugarField"
+        android:layout_marginTop="71dp"
+        android:layout_below="@+id/contactView"
+        android:layout_alignRight="@+id/contactTextView"
+        android:layout_alignEnd="@+id/contactTextView" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="✓"
+        android:id="@+id/addTargetSugarButton"
+        android:layout_alignBottom="@+id/targetSugarField"
+        android:layout_toRightOf="@+id/targetSugarField"
+        android:layout_toEndOf="@+id/targetSugarField"
+        android:layout_marginLeft="28dp"
+        android:layout_marginStart="35dp" />
 
 </RelativeLayout>

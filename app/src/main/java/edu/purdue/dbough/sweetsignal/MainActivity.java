@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Called from fragment_input.xml
     public void displayHomeFrag(View view){
-        inputFragment.saveData(inputFragment.getView());
+        inputFragment.saveData(inputFragment.getView()); //Write data to .csv file
         ArrayList<SugarEntry> recentList = latestEntries(view, 9); //Gets entries from last n hours
         calculateTrends(view, recentList);
 
@@ -220,6 +220,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void calculateTrends(View view, ArrayList<SugarEntry> recentList){
         int targetBloodSugar = 150;
+        if (settingsFragment != null)
+            targetBloodSugar = settingsFragment.getTargetBloodSugar();
+
+        Toast.makeText(getApplicationContext(), "Target Sugar: " + targetBloodSugar,
+                Toast.LENGTH_LONG).show();
+
         final double HBC = 1.32 * targetBloodSugar; //Dynamic high blood sugar value
         final double LBC = 0.6 * targetBloodSugar; //Dynamic low blood sugar value
         final double slopeConstant = 0.75;
