@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
         mBuilder.setContentIntent(resultPendingIntent);
+        mBuilder.setSmallIcon(R.drawable.megaphoneicon);
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
@@ -219,12 +220,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void calculateTrends(View view, ArrayList<SugarEntry> recentList){
-        int targetBloodSugar = 150;
+        int targetBloodSugar = 100;
         if (settingsFragment != null)
             targetBloodSugar = settingsFragment.getTargetBloodSugar();
-
-        Toast.makeText(getApplicationContext(), "Target Sugar: " + targetBloodSugar,
-                Toast.LENGTH_LONG).show();
 
         final double HBC = 1.32 * targetBloodSugar; //Dynamic high blood sugar value
         final double LBC = 0.6 * targetBloodSugar; //Dynamic low blood sugar value

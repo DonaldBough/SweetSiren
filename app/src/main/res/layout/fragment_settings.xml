@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Emergency Contact"
+        android:text="Emergency Contacts"
         android:textSize="18dp"
         android:id="@+id/contactTextView"
         android:layout_alignParentTop="true"
@@ -70,8 +70,8 @@
         android:id="@+id/targetSugarField"
         android:layout_marginTop="71dp"
         android:layout_below="@+id/contactView"
-        android:layout_alignRight="@+id/contactTextView"
-        android:layout_alignEnd="@+id/contactTextView" />
+        android:layout_alignLeft="@+id/TargetTextView"
+        android:layout_alignStart="@+id/TargetTextView" />
 
     <Button
         style="?android:attr/buttonStyleSmall"

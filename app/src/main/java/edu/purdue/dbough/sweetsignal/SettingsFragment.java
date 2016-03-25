@@ -44,22 +44,20 @@ public class SettingsFragment extends Fragment {
             }
             catch (Exception e) {}
         }
-        else {
-            contactsFile = new File(fileDir + "SweetSirenEmergencyContacts.csv");
-            targetFile = new File(fileDir + "TargetBloodSugarFile.csv");
-            targetFile.delete();
-            if (contactsFile.exists() == false) { //Make file if it doesn't exist
-                try {
-                    contactsFile.createNewFile();
-                }
-                catch (IOException e) {}
+
+        contactsFile = new File(fileDir + "SweetSirenEmergencyContacts.csv");
+        targetFile = new File(fileDir + "TargetBloodSugarFile.csv");
+        if (contactsFile.exists() == false) { //Make file if it doesn't exist
+            try {
+                contactsFile.createNewFile();
             }
-            if (targetFile.exists() == false) { //Make file if it doesn't exist
-                try {
-                    targetFile.createNewFile();
-                }
-                catch (IOException e) {}
+            catch (IOException e) {}
+        }
+        if (targetFile.exists() == false) { //Make file if it doesn't exist
+            try {
+                targetFile.createNewFile();
             }
+            catch (IOException e) {}
         }
 
         Button contactButton = (Button) view.findViewById(R.id.addContactButton);
