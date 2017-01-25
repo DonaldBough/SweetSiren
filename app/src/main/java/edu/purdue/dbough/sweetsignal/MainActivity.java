@@ -90,8 +90,6 @@ public class MainActivity extends AppCompatActivity {
      */
     public void calculateTrends(View view, ArrayList<SugarEntry> recentList){
         //TODO Make high and low sugars change in settings
-        final double HBC = 200; //high blood sugar value
-        final double LBC = 90; // low blood sugar value
         final double flatSlope = 0.75; //constant representing a flat, horizontal slope
         double currentSlope = 0; //slope of current blood sugar from previous blood sugar
         Double bloodSugar = 0.0;
@@ -99,13 +97,40 @@ public class MainActivity extends AppCompatActivity {
         int targetBloodSugar = 100;
         long entryInMillis = 0;
         SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+        SugarEntry currEntry = recentList.get(len - 1);
 
         if (settingsFragment != null)
             targetBloodSugar = settingsFragment.getTargetBloodSugar();
 
+        bloodSugar = Double.parseDouble(currEntry.getSugarLevel());
+
+        try {
+            Date entryTime = df.parse(currEntry.getTime());
+            entryInMillis = entryTime.getTime();
+        }
+        catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        if (firstIteration) {
+            prevTimeInMillis = entryInMillis;
+            firstIteration = false;
+        }
+
+        //Minutes since last entry
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(entryInMillis - prevTimeInMillis);
+        //if difference is seconds, negative minutes are returned
+        if (minutes <= 0) {
+            minutes = 1;
+        }
+        currentSlope = (bloodSugar - prevBloodSugar)/minutes;
+
+        //TODO Find what is considered a high and low slope
+
+        /**
         //Finds the total slope values at each (time x sugar) point
         for (int i = len - 1; i >= 0; i--) {
-            bloodSugar = Double.parseDouble(recentList.get(i).getSugarLevel());
+            bloodSugar = Double.parseDouble(recentList.get(len - 1).getSugarLevel());
             try {
                 Date entryTime = df.parse(recentList.get(i).getTime());
                 entryInMillis = entryTime.getTime();
@@ -134,7 +159,8 @@ public class MainActivity extends AppCompatActivity {
             if (slopeTotal <= flatSlope && slopeTotal >= -flatSlope){ //Relatively even slope
                 if (highSlopeAndSugarFlag) {
                     highSlopeAndSugarFlag = false;
-                    buildNotification(view, 2);
+                    sendNotification(2);
+
                 }
 
                 if (bloodSugar > HBC) {
@@ -143,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 else if (bloodSugar < LBC){ //Low sugar, slope is even
                     if (lowSlopeandSugarCounter > 1) {
                         lowSlopeandSugarCounter = 0;
-                        buildNotification(view, 1);
+                        sendNotification(1);
                     }
                     lowSlopeandSugarCounter++;
                 }
@@ -162,13 +188,13 @@ public class MainActivity extends AppCompatActivity {
 
                 else if (slopeTotal < -flatSlope){
                     if (highSlopeAndSugarFlag) {
-                        buildNotification(view, 3);
+                        sendNotification(3);
                     }
                     if (bloodSugar > HBC) { //High sugar, declining slope. Bad!
                         highSlopeAndSugarFlag = true;
                     }
                     else if (bloodSugar < LBC){ //Low sugar, declining slope. Worse!
-                        buildNotification(view, 4);
+                        sendNotification(4);
                     }
                     else{
                         highSlopeAndSugarFlag = true;
@@ -179,6 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+         **/
 
     }
 
@@ -244,27 +271,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Builds a message about blood sugar with the confidence level,
-     * sends message to buildNotification()
-     * @param view
-     * @param confidence
+     * Sends a notification to screeb
+     * @param confidence Level of confidence in notification
      */
-    public void buildNotification(View view, int confidence) {
-        sendNotification("SUGAR WARNING", "BLOOD SUGAR MAY DROP SOON! Code: " + confidence);
+    private void sendNotification(int confidence){
+        String notificationTitle = "SUGAR WARNING";
+        String notificationMessage = "BLOOD SUGAR MAY DROP SOON! Code: " + confidence;
+
         Toast.makeText(getApplicationContext(), "BLOOD SUGAR MAY DROP SOON! Code: " + confidence,
                 Toast.LENGTH_LONG).show();
         String[] contactArray = settingsFragment.loadContacts();
         for (String contact : contactArray){
             sendSMS(contact, "You are being alerted because a low blood sugar level was recently detected!");
         }
-    }
 
-    /**
-     * Sends a notification to screeb
-     * @param notificationTitle Title of notification
-     * @param notificationMessage Message of notification
-     */
-    private void sendNotification(String notificationTitle, String notificationMessage){
+        //Actually send the notification
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.warningflag)
                 .setContentTitle("Attention!")
